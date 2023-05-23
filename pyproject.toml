@@ -5,6 +5,11 @@ description = ""
 authors = ["lj1995"]
 license = "MIT"
 
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+priority = "supplemental"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 torch = "^2.0.0"
