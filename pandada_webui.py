@@ -3,7 +3,7 @@ import torch, os, traceback, sys, warnings, shutil, numpy as np
 os.environ["no_proxy"] = "localhost, 127.0.0.1, ::1"
 import threading
 from time import sleep
-from subprocess import Popen
+from subprocess import Popen, PIPE
 import faiss
 from random import shuffle
 
@@ -20,6 +20,7 @@ os.environ["TEMP"] = tmp
 warnings.filterwarnings("ignore")
 torch.manual_seed(114514)
 import ffmpeg
+from pathlib import Path
 
 # 判断是否有能用来训练和加速推理的N卡
 ngpu = torch.cuda.device_count()
@@ -832,7 +833,10 @@ def train1key(
     infos = []
 
     def get_info_str(strr):
-        infos.append(strr)
+        if isinstance(strr, list):
+            infos.extend(strr)
+        else:
+            infos.append(strr)
         return "\n".join(infos)
 
     model_log_dir = "%s/logs/%s" % (now_dir, exp_dir1)
@@ -1116,6 +1120,16 @@ def export_onnx(ModelPath, ExportedPath, MoeVS=True):
     )
     return "Finished"
 
+def show_train_info(experiment):
+    log_file = Path("./logs") / experiment / "train.log"
+    print(str(log_file).center(80, "="))
+    if not log_file.exists():
+        return ""
+    else:
+        with open(log_file, mode='r') as f:
+            data = f.readlines()[-5:]
+        return "".join(data)
+
 
 with gr.Blocks() as app:
     gr.Markdown(
@@ -1234,7 +1248,7 @@ with gr.Blocks() as app:
             with gr.Group():
                 gr.Markdown(
                     value=
-                        "人声伴奏分离批量处理, 使用UVR5模型. <br>不带和声用HP2, 带和声且提取的人声不需要和声用HP5<br>合格的文件夹路径格式举例: E:\\codes\\py39\\vits_vc_gpu\\白鹭霜华测试样例(去文件管理器地址栏拷就行了)"
+                    "人声伴奏分离批量处理, 使用UVR5模型. <br>不带和声用HP2, 带和声且提取的人声不需要和声用HP5<br>合格的文件夹路径格式举例: E:\\codes\\py39\\vits_vc_gpu\\白鹭霜华测试样例(去文件管理器地址栏拷就行了)"
                 )
                 with gr.Row():
                     with gr.Column():
@@ -1277,7 +1291,7 @@ with gr.Blocks() as app:
         with gr.TabItem("训练"):
             gr.Markdown(
                 value=
-                    "step1: 填写实验配置. 实验数据放在logs下, 每个实验一个文件夹, 需手工输入实验名路径, 内含实验配置, 日志, 训练得到的模型文件. "
+                "step1: 填写实验配置. 实验数据放在logs下, 每个实验一个文件夹, 需手工输入实验名路径, 内含实验配置, 日志, 训练得到的模型文件. "
             )
             with gr.Row():
                 exp_dir1 = gr.Textbox(label="输入实验名", value="mi-test")
@@ -1313,9 +1327,7 @@ with gr.Blocks() as app:
                     value="step2a: 自动遍历训练文件夹下所有可解码成音频的文件并进行切片归一化, 在实验目录下生成2个wav文件夹; 暂时只支持单人训练. "
                 )
                 with gr.Row():
-                    trainset_dir4 = gr.Textbox(
-                        label="输入训练文件夹路径", value="E:\\语音音频+标注\\米津玄师\\src"
-                    )
+                    trainset_dir4 = gr.Textbox(label="输入训练文件夹路径", value="./train/Xiaobai")
                     spk_id5 = gr.Slider(
                         minimum=0,
                         maximum=4,
@@ -1325,7 +1337,7 @@ with gr.Blocks() as app:
                         interactive=True,
                     )
                     but1 = gr.Button("处理数据", variant="primary")
-                    info1 = gr.Textbox(label="输出信息", value="")
+                    info1 = gr.Textbox(label="输出信息", value="", max_lines=6)
                     but1.click(
                         preprocess_dataset, [trainset_dir4, exp_dir1, sr2, np7], [info1]
                     )
@@ -1477,6 +1489,11 @@ with gr.Blocks() as app:
                         ],
                         info3,
                     )
+                with gr.Row():
+                    # train_infos = gr.Textbox(label="输出信息", value=TrainLogParser(Path(".") / str(exp_dir1)), max_lines=10, every=10)
+                    train_infos = gr.Textbox(label="训练日志", value="", max_lines=10)
+                    train_infos_btn = gr.Button("查看训练日志", variant="primary")
+                    train_infos_btn.click(show_train_info, exp_dir1, train_infos)
 
         with gr.TabItem("常见问题解答"):
             try:
