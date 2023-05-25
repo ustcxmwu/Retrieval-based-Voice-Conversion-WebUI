@@ -1122,7 +1122,6 @@ def export_onnx(ModelPath, ExportedPath, MoeVS=True):
 
 def show_train_info(experiment):
     log_file = Path("./logs") / experiment / "train.log"
-    print(str(log_file).center(80, "="))
     if not log_file.exists():
         return ""
     else:
@@ -1490,10 +1489,13 @@ with gr.Blocks() as app:
                         info3,
                     )
                 with gr.Row():
-                    # train_infos = gr.Textbox(label="输出信息", value=TrainLogParser(Path(".") / str(exp_dir1)), max_lines=10, every=10)
-                    train_infos = gr.Textbox(label="训练日志", value="", max_lines=10)
-                    train_infos_btn = gr.Button("查看训练日志", variant="primary")
+                    with gr.Column(scale=1):
+                        train_infos_btn = gr.Button("查看训练日志", variant="primary")
+                        train_infos_clear_btn = gr.Button("清除训练日志", variant="primary")
+                    with gr.Column(scale=5):
+                        train_infos = gr.Textbox(label="训练日志", value="", max_lines=10)
                     train_infos_btn.click(show_train_info, exp_dir1, train_infos)
+                    train_infos_clear_btn.click(lambda : None, None, train_infos)
 
         with gr.TabItem("常见问题解答"):
             try:
