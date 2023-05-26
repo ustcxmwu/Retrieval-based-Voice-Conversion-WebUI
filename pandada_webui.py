@@ -137,7 +137,7 @@ for name in os.listdir(weight_uvr5_root):
 
 def vc_single(
         sid,
-        input_audio_path,
+        audio_file,
         f0_up_key,
         f0_file,
         f0_method,
@@ -150,10 +150,12 @@ def vc_single(
         rms_mix_rate,
 ):  # spk_item, input_audio0, vc_transform0,f0_file,f0method0
     global tgt_sr, net_g, vc, hubert_model, version
-    if input_audio_path is None:
+    if audio_file is None:
         return "You need to upload an audio", None
     f0_up_key = int(f0_up_key)
     try:
+        input_audio_path = str(Path("./raw") / Path(audio_file.name).name)
+        shutil.copy(audio_file.name, Path("./raw") / Path(audio_file.name).name)
         audio = load_audio(input_audio_path, 16000)
         audio_max = np.abs(audio).max() / 0.95
         if audio_max > 1:
@@ -1183,10 +1185,11 @@ with gr.Blocks() as app:
                         vc_transform0 = gr.Number(
                             label="变调(整数, 半音数量, 升八度12降八度-12)", value=0
                         )
-                        input_audio0 = gr.Textbox(
-                            label="输入待处理音频文件路径(默认是正确格式示例)",
-                            value="./raw/filename.wav",
-                        )
+                        # input_audio0 = gr.Textbox(
+                        #     label="输入待处理音频文件路径(默认是正确格式示例)",
+                        #     value="./raw/filename.wav",
+                        # )
+                        input_audio0 = gr.File(label="添加待转换音频")
                         f0method0 = gr.Radio(
                             label="选择音高提取算法,输入歌声可用pm提速,harvest低音好但巨慢无比",
                             choices=["pm", "harvest"],
