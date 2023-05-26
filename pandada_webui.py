@@ -1129,6 +1129,23 @@ def show_train_info(experiment):
             data = f.readlines()[-5:]
         return "".join(data)
 
+def upload_dataset(upload, dataset_name):
+    if dataset_name == "":
+        return
+    dataset = Path("./dataset") / dataset_name
+    if not dataset.exists():
+        dataset.mkdir(parents=True)
+    for audio in upload:
+        shutil.copy(audio.name, dataset / Path(audio.name).name)
+    return get_dataset_info()
+
+def get_dataset_info():
+    dataset_info = []
+    for e in Path("./dataset").glob("*"):
+        if e.is_dir():
+            dataset_info.append((e.name, len([f for f in e.glob("*.wav")])))
+    return "\n".join([f"数据集:{d[0]}, 音频文件个数:{d[1]}" for d in dataset_info])
+
 
 with gr.Blocks() as app:
     gr.Markdown(
@@ -1496,7 +1513,12 @@ with gr.Blocks() as app:
                         train_infos = gr.Textbox(label="训练日志", value="", max_lines=10)
                     train_infos_btn.click(show_train_info, exp_dir1, train_infos)
                     train_infos_clear_btn.click(lambda : None, None, train_infos)
-
+        with gr.TabItem("训练集管理"):
+            d_info = get_dataset_info()
+            datasets = gr.Textbox(label="当前数据集", value=d_info, lines=5)
+            dataset_name = gr.Textbox(label="输入训练数据集名称", value="mi-test")
+            upload_button = gr.UploadButton("上传训练数据", file_types=["audio"], file_count="multiple")
+            upload_button.upload(upload_dataset, [upload_button, dataset_name], datasets)
         with gr.TabItem("常见问题解答"):
             try:
                 with open("docs/faq.md", "r", encoding="utf8") as f:
