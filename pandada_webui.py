@@ -1150,11 +1150,20 @@ def get_dataset_info():
 
 
 with gr.Blocks() as app:
-    gr.Markdown(
-        """
-        # 小白 Music Box
-        Pandada Game 语音生成试验盒. 
-        """)
+    with gr.Row(variant='panel').style(equal_height=True):
+        with gr.Column(scale=1, min_width=80):
+            gr.HTML("<html><img src='file/pandada.png', width=80, height=80 /><br></html>")
+        with gr.Column(scale=30):
+            gr.Markdown(
+                """
+                # 小白 Music Box (VITS)
+                ##### Pandada Game 语音生成试验盒.
+                """)
+    # gr.Markdown(
+    #     """
+    #     # ![logo](file/pandada.png =80x80) 小白 Music Box
+    #     Pandada Game 语音生成试验盒.
+    #     """)
     with gr.Tabs():
         with gr.TabItem("模型推理"):
             with gr.Row():
@@ -1521,7 +1530,7 @@ with gr.Blocks() as app:
             datasets = gr.Textbox(label="当前数据集", value=d_info, lines=5)
             dataset_name = gr.Textbox(label="输入训练数据集名称", value="mi-test")
             upload_button = gr.UploadButton("上传训练数据", file_types=["audio"], file_count="multiple")
-            upload_button.upload(upload_dataset, [upload_button, dataset_name], datasets)
+            upload_button.upload(upload_dataset, [upload_button, dataset_name], datasets, show_progress=True)
         with gr.TabItem("常见问题解答"):
             try:
                 with open("docs/faq.md", "r", encoding="utf8") as f:
