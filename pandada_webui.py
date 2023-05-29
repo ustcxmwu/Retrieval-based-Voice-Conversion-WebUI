@@ -482,12 +482,12 @@ def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
         ),
     ).start()
     while 1:
-        with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
+        with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r", encoding="utf-8") as f:
             yield (f.read())
         sleep(1)
         if done[0] == True:
             break
-    with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
+    with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r", encoding="utf-8") as f:
         log = f.read()
     print(log)
     yield log
