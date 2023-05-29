@@ -853,7 +853,7 @@ def train1key(
 
     os.makedirs(model_log_dir, exist_ok=True)
     #########step1:处理数据
-    open(preprocess_log_path, "w").close()
+    open(preprocess_log_path, "w", encoding="utf-8").close()
     cmd = (
             config.python_cmd
             + " trainset_preprocess_pipeline_print.py %s %s %s %s "
@@ -864,7 +864,7 @@ def train1key(
     yield get_info_str(cmd)
     p = Popen(cmd, shell=True)
     p.wait()
-    with open(preprocess_log_path, "r") as f:
+    with open(preprocess_log_path, "r", encoding="utf-8") as f:
         print(f.read())
     #########step2a:提取音高
     open(extract_f0_feature_log_path, "w")
@@ -1272,50 +1272,6 @@ with gr.Blocks() as app:
                         ],
                         [vc_output1, vc_output2],
                     )
-        with gr.TabItem("伴奏人声分离"):
-            with gr.Group():
-                gr.Markdown(
-                    value=
-                    "人声伴奏分离批量处理, 使用UVR5模型. <br>不带和声用HP2, 带和声且提取的人声不需要和声用HP5<br>合格的文件夹路径格式举例: E:\\codes\\py39\\vits_vc_gpu\\白鹭霜华测试样例(去文件管理器地址栏拷就行了)"
-                )
-                with gr.Row():
-                    with gr.Column():
-                        dir_wav_input = gr.Textbox(
-                            label="输入待处理音频文件夹路径",
-                            value="E:\\codes\\py39\\test-20230416b\\todo-songs\\todo-songs",
-                        )
-                        wav_inputs = gr.File(
-                            file_count="multiple", label="也可批量输入音频文件, 二选一, 优先读文件夹"
-                        )
-                    with gr.Column():
-                        model_choose = gr.Dropdown(label="模型", choices=uvr5_names)
-                        agg = gr.Slider(
-                            minimum=0,
-                            maximum=20,
-                            step=1,
-                            label="人声提取激进程度",
-                            value=10,
-                            interactive=True,
-                            visible=False,  # 先不开放调整
-                        )
-                        opt_vocal_root = gr.Textbox(
-                            label="指定输出人声文件夹", value="opt"
-                        )
-                        opt_ins_root = gr.Textbox(label="指定输出乐器文件夹", value="opt")
-                    but2 = gr.Button("转换", variant="primary")
-                    vc_output4 = gr.Textbox(label="输出信息")
-                    but2.click(
-                        uvr,
-                        [
-                            model_choose,
-                            dir_wav_input,
-                            opt_vocal_root,
-                            wav_inputs,
-                            opt_ins_root,
-                            agg,
-                        ],
-                        [vc_output4],
-                    )
         with gr.TabItem("训练"):
             gr.Markdown(
                 value=
@@ -1355,7 +1311,7 @@ with gr.Blocks() as app:
                     value="step2a: 自动遍历训练文件夹下所有可解码成音频的文件并进行切片归一化, 在实验目录下生成2个wav文件夹; 暂时只支持单人训练. "
                 )
                 with gr.Row():
-                    trainset_dir4 = gr.Textbox(label="输入训练文件夹路径", value="./train/Xiaobai")
+                    trainset_dir4 = gr.Textbox(label="输入训练文件夹路径", value="./dataset/Xiaobai")
                     spk_id5 = gr.Slider(
                         minimum=0,
                         maximum=4,
