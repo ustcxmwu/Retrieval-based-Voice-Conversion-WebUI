@@ -1500,4 +1500,5 @@ with gr.Blocks() as app:
         inbrowser=not config.noautoopen,
         server_port=config.listen_port,
         quiet=True,
+        root_path="/vits"
     )
